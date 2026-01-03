@@ -9,7 +9,9 @@ import {
   Star,
 } from "lucide-react";
 
+import type { LoaderFunctionArgs } from "react-router";
 import { getEntity, getPosterUrl } from "@/lib/tmdb.server";
+import type { CastMember } from "@/lib/tmdb.types";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
@@ -84,7 +86,7 @@ export default function Entity() {
               </div>
 
               <div className="flex w-full gap-2">
-                {entity.genres.map((genre) => {
+                {entity.genres.map((genre: { id: number; name: string }) => {
                   return (
                     <Badge variant="secondary" key={genre.id}>
                       {genre.name}
@@ -141,7 +143,7 @@ export default function Entity() {
               <div className="flex gap-2 flex-col">
                 <h3 className="text-xl font-semibold">Cast</h3>
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
-                  {entity.cast.slice(0, 6).map((c) => {
+                  {entity.cast.slice(0, 6).map((c: CastMember) => {
                     return (
                       <Card key={c.id}>
                         <CardHeader>
@@ -163,10 +165,15 @@ export default function Entity() {
   );
 }
 
-Entity.loader = async function (args) {
+Entity.loader = async function (args: LoaderFunctionArgs) {
   const {
     params: { id },
   } = args;
+
+  if (!id) {
+    throw new Response("Movie ID is required", { status: 400 });
+  }
+
   const entity = await getEntity(id);
 
   if (!entity) {

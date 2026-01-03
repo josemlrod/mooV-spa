@@ -1,7 +1,6 @@
+import type { LoaderFunctionArgs } from "react-router";
 import { redirect } from "react-router";
 import { getAuth } from "@clerk/react-router/server";
-
-import type { Route } from "./+types/profile";
 
 export function meta() {
   return [
@@ -10,7 +9,7 @@ export function meta() {
   ];
 }
 
-export async function loader(args: Route.LoaderArgs) {
+export async function loader(args: LoaderFunctionArgs) {
   const { userId } = await getAuth(args);
 
   if (!userId) {

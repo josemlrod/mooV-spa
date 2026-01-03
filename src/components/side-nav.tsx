@@ -1,10 +1,20 @@
 import { NavLink } from "react-router";
+import { useUser } from "@clerk/clerk-react";
 import { House, User, Film } from "lucide-react";
+
 import { cn } from "@/lib/utils";
+import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 
 export function SideNav() {
+  const {
+    user: { imageUrl, primaryEmailAddress },
+  } = useUser();
+  const { emailAddress } = primaryEmailAddress;
+
   return (
-    <aside 
+    <aside
       className="fixed left-0 top-0 bottom-0 hidden w-[240px] border-r border-border/40 bg-background/95 backdrop-blur-sm lg:flex lg:flex-col"
       style={{ viewTransitionName: "side-nav" }}
     >
@@ -14,7 +24,7 @@ export function SideNav() {
           <span>MooV</span>
         </div>
       </div>
-      
+
       <div className="flex-1 px-4 py-4">
         <nav className="flex flex-col gap-2">
           <NavLink
@@ -22,24 +32,24 @@ export function SideNav() {
             className={({ isActive }) =>
               cn(
                 "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all hover:bg-muted/50",
-                isActive 
-                  ? "bg-primary/10 text-primary hover:bg-primary/15" 
-                  : "text-muted-foreground hover:text-foreground"
+                isActive
+                  ? "bg-primary/10 text-primary hover:bg-primary/15"
+                  : "text-muted-foreground hover:text-foreground",
               )
             }
           >
             <House className="h-5 w-5" />
             <span>Home</span>
           </NavLink>
-          
+
           <NavLink
             to="/profile"
             className={({ isActive }) =>
               cn(
                 "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all hover:bg-muted/50",
-                isActive 
-                  ? "bg-primary/10 text-primary hover:bg-primary/15" 
-                  : "text-muted-foreground hover:text-foreground"
+                isActive
+                  ? "bg-primary/10 text-primary hover:bg-primary/15"
+                  : "text-muted-foreground hover:text-foreground",
               )
             }
           >
@@ -48,10 +58,18 @@ export function SideNav() {
           </NavLink>
         </nav>
       </div>
-      
-      <div className="p-4 text-xs text-muted-foreground text-center">
-        <p>&copy; {new Date().getFullYear()} MooV App</p>
-      </div>
+
+      <Separator />
+
+      <Button
+        variant="ghost"
+        className="w-full justify-start gap-3 h-auto py-2"
+      >
+        <Avatar className="shrink-0">
+          <AvatarImage src={imageUrl} alt="user avatar" />
+        </Avatar>
+        <span className="truncate min-w-0">{emailAddress}</span>
+      </Button>
     </aside>
   );
 }
