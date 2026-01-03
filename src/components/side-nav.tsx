@@ -1,13 +1,21 @@
 import { NavLink } from "react-router";
-import { useUser } from "@clerk/clerk-react";
-import { House, User, Film } from "lucide-react";
+import { useAuth, useUser } from "@clerk/clerk-react";
+import { House, User, Film, LogOut } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
-import { Button } from "@/components/ui/button";
-import { Avatar, AvatarImage } from "./ui/avatar";
+import { buttonVariants } from "@/components/ui/button";
+import { Avatar, AvatarImage } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export function SideNav() {
+  const { signOut } = useAuth();
   const { user } = useUser();
   const { imageUrl } = user || { imageUrl: "" };
   const { emailAddress } = user?.primaryEmailAddress || { emailAddress: "" };
@@ -60,15 +68,30 @@ export function SideNav() {
 
       <Separator />
 
-      <Button
-        variant="ghost"
-        className="w-full justify-start gap-3 h-auto py-2"
-      >
-        <Avatar className="shrink-0">
-          <AvatarImage src={imageUrl} alt="user avatar" />
-        </Avatar>
-        <span className="truncate min-w-0">{emailAddress}</span>
-      </Button>
+      <DropdownMenu>
+        <DropdownMenuTrigger
+          className={cn(
+            buttonVariants({ variant: "ghost" }),
+            "w-full justify-start gap-3 h-auto py-2 rounded-tr-none rounded-tl-none",
+          )}
+        >
+          <Avatar className="shrink-0">
+            <AvatarImage src={imageUrl} alt="user avatar" />
+          </Avatar>
+          <span className="truncate min-w-0">{emailAddress}</span>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-56">
+          <DropdownMenuGroup>
+            <DropdownMenuItem
+              onClick={() => signOut()}
+              className="text-destructive focus:bg-destructive/10 focus:text-destructive cursor-pointer"
+            >
+              <LogOut className="mr-2 h-4 w-4" />
+              <span>Sign out</span>
+            </DropdownMenuItem>
+          </DropdownMenuGroup>
+        </DropdownMenuContent>
+      </DropdownMenu>
     </aside>
   );
 }
