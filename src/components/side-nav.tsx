@@ -5,13 +5,12 @@ import { House, User, Film } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+import { Avatar, AvatarImage } from "./ui/avatar";
 
 export function SideNav() {
-  const {
-    user: { imageUrl, primaryEmailAddress },
-  } = useUser();
-  const { emailAddress } = primaryEmailAddress;
+  const { user } = useUser();
+  const { imageUrl } = user || { imageUrl: "" };
+  const { emailAddress } = user?.primaryEmailAddress || { emailAddress: "" };
 
   return (
     <aside
