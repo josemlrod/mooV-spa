@@ -7,7 +7,7 @@ import Home from "@/routes/home";
 import Profile from "@/routes/profile";
 import Layout from "@/routes/layout";
 import Entity from "@/routes/entity";
-import { loggingMiddleware } from "@/lib/utils";
+import { loggingMiddleware, authMiddleware } from "@/lib/utils";
 
 const routes = [
   {
@@ -26,6 +26,7 @@ const routes = [
 
       {
         element: <Layout />,
+        middleware: [authMiddleware],
         children: [
           {
             path: "/",

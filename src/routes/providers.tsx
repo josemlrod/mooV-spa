@@ -1,11 +1,11 @@
-import { Outlet } from "react-router";
+import { Outlet, ScrollRestoration } from "react-router";
 import { ClerkProvider } from "@clerk/clerk-react";
-
-const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
+import { clerk, PUBLISHABLE_KEY } from "@/lib/clerk";
 
 export default function AppWithProviders() {
   return (
-    <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
+    <ClerkProvider Clerk={clerk} publishableKey={PUBLISHABLE_KEY}>
+      <ScrollRestoration />
       <Outlet />
     </ClerkProvider>
   );
