@@ -1,5 +1,5 @@
 import { NavLink } from "react-router";
-import { useAuth, useUser } from "@clerk/clerk-react";
+import { useAuth } from "@clerk/clerk-react";
 import { House, User, Film, LogOut, SearchIcon } from "lucide-react";
 
 import { cn } from "@/lib/utils";

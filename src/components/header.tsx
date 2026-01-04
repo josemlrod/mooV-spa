@@ -1,4 +1,4 @@
-import { useAuth, useUser } from "@clerk/react-router";
+import { useAuth } from "@clerk/react-router";
 import { LogOut, Film } from "lucide-react";
 
 import { buttonVariants } from "@/components/ui/button";
@@ -11,11 +11,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
+import useUserData from "@/hooks/useUserData";
 
 export function Header() {
   const { signOut } = useAuth();
-  const { user } = useUser();
-  const { imageUrl } = user || { imageUrl: "" };
+  const { profileImageUrl } = useUserData();
 
   return (
     <header
@@ -35,7 +35,7 @@ export function Header() {
           )}
         >
           <Avatar className="shrink-0">
-            <AvatarImage src={imageUrl} alt="user avatar" />
+            <AvatarImage src={profileImageUrl} alt="user avatar" />
           </Avatar>
           <span className="sr-only">Open user menu</span>
         </DropdownMenuTrigger>

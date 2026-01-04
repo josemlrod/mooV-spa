@@ -38,6 +38,12 @@ const routes = [
             path: "/profile",
             element: <Profile />,
           },
+          {
+            path: "/search",
+            element: <Search />,
+            action: Search.action,
+            loader: Search.loader,
+          },
         ],
       },
 
@@ -46,13 +52,6 @@ const routes = [
         element: <Entity />,
         loader: Entity.loader,
         action: Entity.action,
-      },
-
-      {
-        path: "/search",
-        element: <Search />,
-        action: Search.action,
-        loader: Search.loader,
       },
 
       {

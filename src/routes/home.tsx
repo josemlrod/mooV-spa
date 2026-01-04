@@ -20,7 +20,7 @@ export default function Home() {
   useCreateUser();
 
   return (
-    <div className="container mx-auto px-4 lg:px-8 space-y-6">
+    <div className="container mx-auto px-4 lg:px-8 space-y-6 pt-6 lg:pt-0">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl lg:text-3xl font-bold tracking-tight">
           Trending This Week

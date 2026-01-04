@@ -1,6 +1,5 @@
 import { useRef } from "react";
 import {
-  useNavigate,
   useFetcher,
   Link,
   useViewTransitionState,
@@ -8,9 +7,8 @@ import {
   useLoaderData,
 } from "react-router";
 import { useSearchParams, type ActionFunctionArgs } from "react-router";
-import { ArrowLeft, Search as SearchIcon } from "lucide-react";
+import { Search as SearchIcon } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { searchMovie, getPosterUrl } from "@/lib/tmdb.server";
@@ -96,7 +94,6 @@ function SearchResultItem({ movie }: { movie: SearchResult }) {
 }
 
 export default function Search() {
-  const navigate = useNavigate();
   const fetcher = useFetcher<ActionData>();
   const loaderData = useLoaderData();
 
@@ -114,17 +111,7 @@ export default function Search() {
   const hasSearched = fetcher.data !== undefined;
 
   return (
-    <div className="container mx-auto px-4 lg:px-8 py-6 h-full">
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => navigate("/")}
-        className="mb-4 gap-2 text-muted-foreground hover:text-foreground"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        Go home
-      </Button>
-
+    <div className="container mx-auto px-4 lg:px-8 pb-6 pt-6 lg:pt-0 h-full">
       <div className="flex flex-col gap-6 h-full">
         <fetcher.Form
           method="post"
@@ -135,15 +122,17 @@ export default function Search() {
             type="text"
             name="query"
             placeholder="Search by name, e.g. Dune..."
+            defaultValue={query}
             onChange={(e) => {
               const val = e.currentTarget.value;
 
               if (val) {
                 searchParams.set("q", val);
-                setSearchParams(searchParams);
               } else {
                 searchParams.delete("q");
               }
+
+              setSearchParams(searchParams);
             }}
           />
         </fetcher.Form>
@@ -162,7 +151,7 @@ export default function Search() {
             </div>
           ) : (
             <div className="flex flex-col gap-4 p-2">
-              {results.map((movie) => (
+              {results.map((movie: SearchResult) => (
                 <SearchResultItem key={movie.id} movie={movie} />
               ))}
             </div>
