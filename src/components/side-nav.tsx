@@ -13,12 +13,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import useUserData from "@/hooks/useUserData";
 
 export function SideNav() {
   const { signOut } = useAuth();
-  const { user } = useUser();
-  const { imageUrl } = user || { imageUrl: "" };
-  const { emailAddress } = user?.primaryEmailAddress || { emailAddress: "" };
+
+  const { displayName, profileImageUrl, emailAddress } = useUserData();
 
   return (
     <aside
@@ -26,6 +26,7 @@ export function SideNav() {
       style={{ viewTransitionName: "side-nav" }}
     >
       <div className="flex h-16 items-center px-6">
+        {" "}
         <div className="flex items-center gap-2 font-bold text-xl tracking-tight text-white">
           <Film className="h-6 w-6 text-primary" />
           <span>MooV</span>
@@ -91,9 +92,11 @@ export function SideNav() {
           )}
         >
           <Avatar className="shrink-0">
-            <AvatarImage src={imageUrl} alt="user avatar" />
+            <AvatarImage src={profileImageUrl} alt="user avatar" />
           </Avatar>
-          <span className="truncate min-w-0">{emailAddress}</span>
+          <span className="truncate min-w-0">
+            {displayName ?? emailAddress}
+          </span>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-56">
           <DropdownMenuGroup>

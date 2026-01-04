@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useId } from "react";
 import { useUser } from "@clerk/clerk-react";
 import { useQuery, useMutation } from "convex/react";
+import heic2any from "heic2any";
 import {
   Film,
   Eye,
@@ -100,11 +101,29 @@ export default function Profile() {
 
     setIsUploading(true);
     try {
+      let fileToUpload: Blob = file;
+      let mimeType = file.type;
+
+      const isHeic = file.type === "image/heic" || 
+                     file.type === "image/heif" || 
+                     file.name.toLowerCase().endsWith(".heic") ||
+                     file.name.toLowerCase().endsWith(".heif");
+
+      if (isHeic) {
+        const convertedBlob = await heic2any({
+          blob: file,
+          toType: "image/jpeg",
+          quality: 0.9,
+        });
+        fileToUpload = Array.isArray(convertedBlob) ? convertedBlob[0] : convertedBlob;
+        mimeType = "image/jpeg";
+      }
+
       const postUrl = await generateUploadUrl();
       const result = await fetch(postUrl, {
         method: "POST",
-        headers: { "Content-Type": file.type },
-        body: file,
+        headers: { "Content-Type": mimeType },
+        body: fileToUpload,
       });
 
       if (!result.ok) throw new Error("Upload failed");
@@ -385,7 +404,7 @@ export default function Profile() {
                 </CardContent>
               </Card>
             ) : (
-              <div className="grid gap-3">
+              <div className="grid gap-3 max-h-[60vh] lg:max-h-[50vh] overflow-y-auto pr-2 -mr-2">
                 {logs.map((log, index) => (
                   <Card
                     key={log._id}
