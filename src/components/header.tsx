@@ -1,7 +1,7 @@
-import { useAuth } from "@clerk/react-router";
-import { LogOut, User, Film } from "lucide-react";
+import { useAuth, useUser } from "@clerk/react-router";
+import { LogOut, Film } from "lucide-react";
+
 import { buttonVariants } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,17 +9,21 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarImage } from "@/components/ui/avatar";
+import { cn } from "@/lib/utils";
 
 export function Header() {
   const { signOut } = useAuth();
+  const { user } = useUser();
+  const { imageUrl } = user || { imageUrl: "" };
 
   return (
     <header
       className="sticky top-0 z-40 flex h-16 items-center justify-between border-b border-border/40 bg-background/80 px-4 backdrop-blur-xl lg:hidden"
       style={{ viewTransitionName: "header" }}
     >
-      <div className="flex items-center gap-2 font-bold text-xl tracking-tight text-primary">
-        <Film className="h-6 w-6" />
+      <div className="flex items-center gap-2 font-bold text-xl tracking-tight text-white">
+        <Film className="h-6 w-6 text-primary" />
         <span>MooV</span>
       </div>
 
@@ -30,7 +34,9 @@ export function Header() {
             "rounded-full h-10 w-10 border border-border/50 bg-background/50 cursor-pointer",
           )}
         >
-          <User className="h-5 w-5" />
+          <Avatar className="shrink-0">
+            <AvatarImage src={imageUrl} alt="user avatar" />
+          </Avatar>
           <span className="sr-only">Open user menu</span>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-56">

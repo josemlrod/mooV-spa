@@ -1,10 +1,10 @@
 import { NavLink } from "react-router";
-import { House, User } from "lucide-react";
+import { House, SearchIcon, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function BottomNav() {
   return (
-    <nav 
+    <nav
       className="fixed bottom-0 left-0 right-0 z-50 block border-t border-border/40 bg-background/80 pb-safe backdrop-blur-xl lg:hidden"
       style={{ viewTransitionName: "bottom-nav" }}
     >
@@ -14,20 +14,33 @@ export function BottomNav() {
           className={({ isActive }) =>
             cn(
               "flex flex-1 flex-col items-center justify-center gap-1 rounded-lg py-2 text-[10px] font-medium transition-colors hover:bg-muted/50",
-              isActive ? "text-primary" : "text-muted-foreground"
+              isActive ? "text-primary" : "text-muted-foreground",
             )
           }
         >
           <House className="h-6 w-6" />
           <span>Home</span>
         </NavLink>
-        
+
+        <NavLink
+          to="/search"
+          className={({ isActive }) =>
+            cn(
+              "flex flex-1 flex-col items-center justify-center gap-1 rounded-lg py-2 text-[10px] font-medium transition-colors hover:bg-muted/50",
+              isActive ? "text-primary" : "text-muted-foreground",
+            )
+          }
+        >
+          <SearchIcon className="h-6 w-6" />
+          <span>Search</span>
+        </NavLink>
+
         <NavLink
           to="/profile"
           className={({ isActive }) =>
             cn(
               "flex flex-1 flex-col items-center justify-center gap-1 rounded-lg py-2 text-[10px] font-medium transition-colors hover:bg-muted/50",
-              isActive ? "text-primary" : "text-muted-foreground"
+              isActive ? "text-primary" : "text-muted-foreground",
             )
           }
         >

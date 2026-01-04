@@ -1,6 +1,6 @@
 import { NavLink } from "react-router";
 import { useAuth, useUser } from "@clerk/clerk-react";
-import { House, User, Film, LogOut } from "lucide-react";
+import { House, User, Film, LogOut, SearchIcon } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
@@ -26,8 +26,8 @@ export function SideNav() {
       style={{ viewTransitionName: "side-nav" }}
     >
       <div className="flex h-16 items-center px-6">
-        <div className="flex items-center gap-2 font-bold text-xl tracking-tight text-primary">
-          <Film className="h-6 w-6" />
+        <div className="flex items-center gap-2 font-bold text-xl tracking-tight text-white">
+          <Film className="h-6 w-6 text-primary" />
           <span>MooV</span>
         </div>
       </div>
@@ -62,6 +62,21 @@ export function SideNav() {
           >
             <User className="h-5 w-5" />
             <span>Profile</span>
+          </NavLink>
+
+          <NavLink
+            to="/search"
+            className={({ isActive }) =>
+              cn(
+                "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all hover:bg-muted/50",
+                isActive
+                  ? "bg-primary/10 text-primary hover:bg-primary/15"
+                  : "text-muted-foreground hover:text-foreground",
+              )
+            }
+          >
+            <SearchIcon className="h-5 w-5" />
+            <span>Search</span>
           </NavLink>
         </nav>
       </div>

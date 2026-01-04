@@ -76,3 +76,18 @@ export async function getEntity(
     cast: credits ? credits.cast : null,
   };
 }
+
+export async function searchMovie(
+  query: string
+) {
+  const [results, error] = await tryCatch(
+    tmdbFetch<MovieDetail>(`/search/movie?query=${query}&language=en-US`),
+  );
+
+  if (error) {
+    console.error("Failed to search:", error);
+    return null;
+  }
+
+  return results;
+}

@@ -1,4 +1,5 @@
 import { MovieCard } from "@/components/movie-card";
+import { useCreateUser } from "@/hooks/useCreateUser";
 
 import { getTrendingMovies, getPosterUrl } from "@/lib/tmdb.server";
 import { useLoaderData } from "react-router";
@@ -15,6 +16,8 @@ export interface MovieWithPoster {
 export default function Home() {
   const loaderData = useLoaderData();
   const { movies } = loaderData;
+
+  useCreateUser();
 
   return (
     <div className="container mx-auto px-4 lg:px-8 space-y-6">

@@ -8,6 +8,7 @@ import Profile from "@/routes/profile";
 import Layout from "@/routes/layout";
 import Entity from "@/routes/entity";
 import { loggingMiddleware, authMiddleware } from "@/lib/utils";
+import Search from "@/routes/search";
 
 const routes = [
   {
@@ -44,6 +45,12 @@ const routes = [
         path: "/entity/:id",
         element: <Entity />,
         loader: Entity.loader,
+      },
+
+      {
+        path: "/search",
+        element: <Search />,
+        action: Search.action,
       },
 
       {

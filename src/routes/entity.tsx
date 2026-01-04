@@ -1,15 +1,8 @@
 import { useState } from "react";
 import { useLoaderData, useNavigate } from "react-router";
-import {
-  ArrowLeft,
-  Calendar,
-  Clock,
-  Heart,
-  MessageCircle,
-  Star,
-} from "lucide-react";
-
 import type { LoaderFunctionArgs } from "react-router";
+import { ArrowLeft, Calendar, Clock, MessageCircle, Star } from "lucide-react";
+
 import { getEntity, getPosterUrl } from "@/lib/tmdb.server";
 import type { CastMember } from "@/lib/tmdb.types";
 import { Button } from "@/components/ui/button";
@@ -109,10 +102,6 @@ export default function Entity() {
             </div>
 
             <div className="flex gap-3">
-              <Button variant="outline" size="lg" className="gap-2">
-                <Heart className="h-5 w-5" />
-                Favorite
-              </Button>
               <Button
                 variant="default"
                 size="lg"
@@ -122,7 +111,7 @@ export default function Entity() {
                 }}
               >
                 <MessageCircle className="h-5 w-5" />
-                Review
+                Log watch
               </Button>
             </div>
           </div>
