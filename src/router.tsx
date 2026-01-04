@@ -52,6 +52,7 @@ const routes = [
         path: "/search",
         element: <Search />,
         action: Search.action,
+        loader: Search.loader,
       },
 
       {

@@ -115,8 +115,52 @@ export const getWatchLogsByUser = query({
       .withIndex("by_user_id", (q) => q.eq("userId", user._id))
       .collect();
 
-    return logs.sort((a, b) =>
+    const logsWithMovies = await Promise.all(
+      logs.map(async (log) => {
+        const movie = await ctx.db.get(log.movieId);
+        return {
+          ...log,
+          movieTitle: movie?.title,
+          moviePoster: movie?.posterPath,
+          movieReleaseDate: movie?.releaseDate,
+        };
+      })
+    );
+
+    return logsWithMovies.sort((a, b) =>
       new Date(b.watchedAt).getTime() - new Date(a.watchedAt).getTime()
     );
+  },
+});
+
+export const getUserStats = query({
+  args: {
+    clerkUserId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_clerk_user_id", (q) => q.eq("clerkUserId", args.clerkUserId))
+      .first();
+
+    if (!user) {
+      return { totalLogs: 0, uniqueMovies: 0, rewatches: 0, theaterVisits: 0 };
+    }
+
+    const logs = await ctx.db
+      .query("watchLogs")
+      .withIndex("by_user_id", (q) => q.eq("userId", user._id))
+      .collect();
+
+    const uniqueMovieIds = new Set(logs.map((log) => log.movieId));
+    const rewatches = logs.filter((log) => log.isRewatch).length;
+    const theaterVisits = logs.filter((log) => log.watchedInTheater).length;
+
+    return {
+      totalLogs: logs.length,
+      uniqueMovies: uniqueMovieIds.size,
+      rewatches,
+      theaterVisits,
+    };
   },
 });

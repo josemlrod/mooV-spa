@@ -1,6 +1,13 @@
 import { useRef } from "react";
-import { useNavigate, useFetcher, Link } from "react-router";
-import type { ActionFunctionArgs } from "react-router";
+import {
+  useNavigate,
+  useFetcher,
+  Link,
+  useViewTransitionState,
+  type LoaderFunctionArgs,
+  useLoaderData,
+} from "react-router";
+import { useSearchParams, type ActionFunctionArgs } from "react-router";
 import { ArrowLeft, Search as SearchIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -38,9 +45,62 @@ interface ActionData {
   query: string;
 }
 
+function SearchResultItem({ movie }: { movie: SearchResult }) {
+  const href = `/entity/${movie.id}`;
+  const isTransitioning = useViewTransitionState(href);
+
+  return (
+    <Link
+      to={href}
+      className="flex gap-4 p-3 rounded-xl bg-card hover:bg-accent transition-colors"
+      viewTransition
+    >
+      <div className="w-20 h-30 flex-shrink-0">
+        <div className="aspect-[2/3] overflow-hidden rounded-lg bg-muted">
+          {movie.posterUrl ? (
+            <img
+              src={movie.posterUrl}
+              alt={movie.title}
+              className="h-full w-full object-cover"
+              style={{
+                viewTransitionName: isTransitioning
+                  ? `movie-poster-${movie.id}`
+                  : "none",
+              }}
+            />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center bg-muted text-muted-foreground">
+              <span className="text-xs">No Poster</span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="flex-1 min-w-0 flex flex-col gap-1">
+        <h3 className="font-semibold text-foreground line-clamp-1">
+          {movie.title}
+        </h3>
+        <p className="text-sm text-muted-foreground line-clamp-2">
+          {movie.overview || "No description available."}
+        </p>
+        {movie.releaseDate && (
+          <div className="mt-auto pt-2">
+            <Badge variant="secondary">
+              {new Date(movie.releaseDate).getFullYear()}
+            </Badge>
+          </div>
+        )}
+      </div>
+    </Link>
+  );
+}
+
 export default function Search() {
   const navigate = useNavigate();
   const fetcher = useFetcher<ActionData>();
+  const loaderData = useLoaderData();
+
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const debouncedSubmit = useRef(
     debounce((form: HTMLFormElement) => {
@@ -48,8 +108,8 @@ export default function Search() {
     }, 500),
   ).current;
 
-  const results = fetcher.data?.results ?? [];
-  const query = fetcher.data?.query ?? "";
+  const results = fetcher.data?.results || loaderData.results || [];
+  const query = fetcher.data?.query || loaderData.query || "";
   const isSearching = fetcher.state === "submitting";
   const hasSearched = fetcher.data !== undefined;
 
@@ -75,6 +135,16 @@ export default function Search() {
             type="text"
             name="query"
             placeholder="Search by name, e.g. Dune..."
+            onChange={(e) => {
+              const val = e.currentTarget.value;
+
+              if (val) {
+                searchParams.set("q", val);
+                setSearchParams(searchParams);
+              } else {
+                searchParams.delete("q");
+              }
+            }}
           />
         </fetcher.Form>
 
@@ -91,45 +161,9 @@ export default function Search() {
               </p>
             </div>
           ) : (
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-4 p-2">
               {results.map((movie) => (
-                <Link
-                  key={movie.id}
-                  to={`/entity/${movie.id}`}
-                  className="flex gap-4 p-3 rounded-xl bg-card hover:bg-accent transition-colors"
-                >
-                  <div className="w-20 h-30 flex-shrink-0">
-                    <div className="aspect-[2/3] overflow-hidden rounded-lg bg-muted">
-                      {movie.posterUrl ? (
-                        <img
-                          src={movie.posterUrl}
-                          alt={movie.title}
-                          className="h-full w-full object-cover"
-                        />
-                      ) : (
-                        <div className="flex h-full w-full items-center justify-center bg-muted text-muted-foreground">
-                          <span className="text-xs">No Poster</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="flex-1 min-w-0 flex flex-col gap-1">
-                    <h3 className="font-semibold text-foreground line-clamp-1">
-                      {movie.title}
-                    </h3>
-                    <p className="text-sm text-muted-foreground line-clamp-2">
-                      {movie.overview || "No description available."}
-                    </p>
-                    {movie.releaseDate && (
-                      <div className="mt-auto pt-2">
-                        <Badge variant="secondary">
-                          {new Date(movie.releaseDate).getFullYear()}
-                        </Badge>
-                      </div>
-                    )}
-                  </div>
-                </Link>
+                <SearchResultItem key={movie.id} movie={movie} />
               ))}
             </div>
           )}
@@ -138,6 +172,31 @@ export default function Search() {
     </div>
   );
 }
+
+Search.loader = async function ({ request }: LoaderFunctionArgs) {
+  const url = new URL(request.url);
+  const query = url.searchParams.get("q");
+
+  if (query) {
+    const data = (await searchMovie(query)) as TrendingResponse | null;
+
+    if (!data) {
+      return { results: [], query };
+    }
+
+    const results: SearchResult[] = data.results.map((movie: Movie) => ({
+      id: movie.id,
+      title: movie.title,
+      overview: movie.overview,
+      posterUrl: getPosterUrl(movie.poster_path, "w154"),
+      releaseDate: movie.release_date,
+    }));
+
+    return { results, query };
+  }
+
+  return { results: [], query: "" };
+};
 
 Search.action = async function ({ request }: ActionFunctionArgs) {
   const formData = await request.formData();

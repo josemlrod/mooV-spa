@@ -9,6 +9,7 @@ export default defineSchema({
     displayName: v.union(v.string(), v.null()),
     bio: v.union(v.string(), v.null()),
     profileImageUrl: v.union(v.string(), v.null()),
+    profileImageStorageId: v.optional(v.union(v.id("_storage"), v.null())),
     privacySetting: v.union(
       v.literal("public"),
       v.literal("friends_only"),
