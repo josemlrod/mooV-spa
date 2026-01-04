@@ -45,6 +45,7 @@ const routes = [
         path: "/entity/:id",
         element: <Entity />,
         loader: Entity.loader,
+        action: Entity.action,
       },
 
       {

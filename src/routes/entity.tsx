@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useLoaderData, useNavigate } from "react-router";
-import type { LoaderFunctionArgs } from "react-router";
-import { ArrowLeft, Calendar, Clock, MessageCircle, Star } from "lucide-react";
+import type { LoaderFunctionArgs, ActionFunctionArgs } from "react-router";
+import { ArrowLeft, Calendar, Clock, History, MessageCircle, Star } from "lucide-react";
 
 import { getEntity, getPosterUrl } from "@/lib/tmdb.server";
 import type { CastMember } from "@/lib/tmdb.types";
@@ -15,13 +15,30 @@ import {
   CardHeader,
 } from "@/components/ui/card";
 import { NewReview } from "@/components/new-review";
+import { WatchLogsSheet } from "@/components/watch-logs-sheet";
+
+interface EntityData {
+  id: number;
+  title: string;
+  tagline?: string;
+  release_date: string;
+  runtime: number;
+  overview: string;
+  posterUrl: string | null;
+  poster_path: string | null;
+  backdrop_path: string | null;
+  vote_average: number;
+  genres: { id: number; name: string }[];
+  cast?: CastMember[];
+}
 
 export default function Entity() {
-  const loaderData = useLoaderData();
+  const loaderData = useLoaderData() as { entity: EntityData };
   const { entity } = loaderData;
   const navigate = useNavigate();
 
-  const [open, setOpen] = useState(false);
+  const [reviewOpen, setReviewOpen] = useState(false);
+  const [logsOpen, setLogsOpen] = useState(false);
 
   return (
     <div className="container mx-auto px-4 lg:px-8 py-6">
@@ -106,12 +123,19 @@ export default function Entity() {
                 variant="default"
                 size="lg"
                 className="gap-2"
-                onClick={() => {
-                  setOpen(true);
-                }}
+                onClick={() => setReviewOpen(true)}
               >
                 <MessageCircle className="h-5 w-5" />
                 Log watch
+              </Button>
+              <Button
+                variant="outline"
+                size="lg"
+                className="gap-2"
+                onClick={() => setLogsOpen(true)}
+              >
+                <History className="h-5 w-5" />
+                See watch logs
               </Button>
             </div>
           </div>
@@ -149,7 +173,17 @@ export default function Entity() {
         </div>
       </div>
 
-      <NewReview open={open} onOpenChange={() => setOpen(false)} />
+      <NewReview
+        open={reviewOpen}
+        onOpenChange={() => setReviewOpen(false)}
+        entity={entity}
+      />
+
+      <WatchLogsSheet
+        open={logsOpen}
+        onOpenChange={() => setLogsOpen(false)}
+        entity={entity}
+      />
     </div>
   );
 }
@@ -173,6 +207,65 @@ Entity.loader = async function (args: LoaderFunctionArgs) {
     entity: {
       ...entity,
       posterUrl: getPosterUrl(entity.poster_path, "w500"),
+    },
+  };
+};
+
+Entity.action = async function ({ request }: ActionFunctionArgs) {
+  const formData = await request.formData();
+
+  const rating = formData.get("rating");
+  const reviewText = formData.get("reviewText");
+  const watchedAt = formData.get("watchedAt");
+  const isRewatch = formData.get("isRewatch") === "true";
+  const watchedInTheater = formData.get("watchedInTheater") === "true";
+  const theaterName = formData.get("theaterName");
+  const theaterCity = formData.get("theaterCity");
+  const theaterFormat = formData.get("theaterFormat");
+  const visibility = formData.get("visibility");
+  const tmdbId = formData.get("tmdbId");
+  const movieTitle = formData.get("movieTitle");
+  const releaseDate = formData.get("releaseDate");
+  const runtime = formData.get("runtime");
+  const overview = formData.get("overview");
+  const posterPath = formData.get("posterPath");
+  const backdropPath = formData.get("backdropPath");
+  const voteAverage = formData.get("voteAverage");
+  const genres = formData.get("genres");
+  const cast = formData.get("cast");
+
+  if (!rating || Number(rating) <= 0) {
+    return { success: false, error: "Rating is required" };
+  }
+
+  if (!tmdbId) {
+    return { success: false, error: "Movie ID is required" };
+  }
+
+  return {
+    success: true,
+    data: {
+      rating: Number(rating),
+      reviewText: reviewText ? String(reviewText) : null,
+      watchedAt: String(watchedAt),
+      isRewatch,
+      watchedInTheater,
+      theaterName: theaterName ? String(theaterName) : null,
+      theaterCity: theaterCity ? String(theaterCity) : null,
+      theaterFormat: theaterFormat ? String(theaterFormat) : null,
+      visibility: String(visibility) as "public" | "friends" | "private",
+      movie: {
+        tmdbId: Number(tmdbId),
+        title: String(movieTitle),
+        releaseDate: releaseDate ? String(releaseDate) : null,
+        runtime: runtime ? Number(runtime) : null,
+        overview: overview ? String(overview) : null,
+        posterPath: posterPath ? String(posterPath) : null,
+        backdropPath: backdropPath ? String(backdropPath) : null,
+        voteAverage: voteAverage ? Number(voteAverage) : null,
+        genres: genres ? JSON.parse(String(genres)) : null,
+        cast: cast ? JSON.parse(String(cast)) : null,
+      },
     },
   };
 };
