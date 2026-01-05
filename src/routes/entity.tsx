@@ -41,7 +41,7 @@ export default function Entity() {
   const [logsOpen, setLogsOpen] = useState(false);
 
   return (
-    <div className="container mx-auto px-4 lg:px-8 py-6">
+    <div className="container mx-auto px-4 lg:px-8 py-6 pt-[calc(1.5rem+var(--safe-area-inset-top))] pb-[calc(1.5rem+var(--safe-area-inset-bottom))]">
       <Button
         variant="ghost"
         size="sm"
