@@ -17,9 +17,24 @@ import {
 } from "lucide-react";
 
 import { api } from "../../convex/_generated/api";
+import type { Doc } from "../../convex/_generated/dataModel";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import { Input } from "@/components/ui/input";
 import {
   InputGroup,
@@ -31,7 +46,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { cn } from "@/lib/utils";
+import { WatchLogDetailView } from "@/components/watch-logs-sheet";
+import { cn, useMediaQuery } from "@/lib/utils";
 
 function getRatingColor(rating: number): string {
   if (rating <= 3) return "text-red-500";
@@ -76,9 +92,11 @@ export default function Profile() {
   const generateUploadUrl = useMutation(api.users.generateUploadUrl);
   const updateProfileImage = useMutation(api.users.updateProfileImage);
 
+  const isDesktop = useMediaQuery("(min-width: 1024px)");
   const [isEditing, setIsEditing] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [selectedLog, setSelectedLog] = useState<Doc<"watchLogs"> | null>(null);
   const [formData, setFormData] = useState({
     username: "",
     displayName: "",
@@ -408,8 +426,9 @@ export default function Profile() {
                 {logs.map((log, index) => (
                   <Card
                     key={log._id}
-                    className="overflow-hidden hover:bg-muted/20 transition-colors animate-in fade-in slide-in-from-bottom-2 duration-500 fill-mode-backwards"
+                    className="overflow-hidden hover:bg-muted/20 transition-colors animate-in fade-in slide-in-from-bottom-2 duration-500 fill-mode-backwards cursor-pointer hover:shadow-md hover:border-primary/30"
                     style={{ animationDelay: `${index * 50}ms` }}
+                    onClick={() => setSelectedLog(log)}
                   >
                     <div className="flex items-start p-4 gap-4">
                       <div className="shrink-0 h-24 w-16 bg-muted rounded-md overflow-hidden shadow-sm relative">
@@ -488,6 +507,32 @@ export default function Profile() {
           </div>
         </div>
       </div>
+
+      {isDesktop ? (
+        <Dialog open={!!selectedLog} onOpenChange={(open) => !open && setSelectedLog(null)}>
+          <DialogContent className="sm:max-w-md" onCloseClick={() => setSelectedLog(null)}>
+            <DialogHeader>
+              <DialogTitle>Watch log details</DialogTitle>
+              <DialogDescription>
+                {selectedLog ? `Logged on ${formatDate(selectedLog.watchedAt)}` : ""}
+              </DialogDescription>
+            </DialogHeader>
+            {selectedLog && <WatchLogDetailView log={selectedLog} />}
+          </DialogContent>
+        </Dialog>
+      ) : (
+        <Sheet open={!!selectedLog} onOpenChange={(open) => !open && setSelectedLog(null)}>
+          <SheetContent side="bottom" className="px-6 pb-8 max-h-[90vh] overflow-y-auto">
+            <SheetHeader className="pb-4">
+              <SheetTitle>Watch log details</SheetTitle>
+              <SheetDescription>
+                {selectedLog ? `Logged on ${formatDate(selectedLog.watchedAt)}` : ""}
+              </SheetDescription>
+            </SheetHeader>
+            {selectedLog && <WatchLogDetailView log={selectedLog} />}
+          </SheetContent>
+        </Sheet>
+      )}
     </div>
   );
 }
