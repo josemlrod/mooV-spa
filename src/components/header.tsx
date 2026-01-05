@@ -19,8 +19,8 @@ export function Header() {
 
   return (
     <header
-      className="sticky top-0 z-40 flex h-16 items-center justify-between border-b border-border/40 bg-background/80 px-4 backdrop-blur-xl lg:hidden"
-      style={{ viewTransitionName: "header" }}
+      className="sticky top-0 z-40 flex h-16 items-center justify-between border-b border-border/40 bg-background/80 px-4 pt-[var(--safe-area-inset-top)] backdrop-blur-xl lg:hidden"
+      style={{ viewTransitionName: "header", minHeight: "calc(4rem + var(--safe-area-inset-top, 0px))" }}
     >
       <div className="flex items-center gap-2 font-bold text-xl tracking-tight text-white">
         <Film className="h-6 w-6 text-primary" />

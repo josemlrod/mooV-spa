@@ -2,24 +2,13 @@ import { createRoot } from "react-dom/client";
 import { RouterProvider } from "react-router/dom";
 import { ConvexProvider, ConvexReactClient } from "convex/react";
 
-/*
- * TODO:
- * add tanstackquery
- * make PWA
- * allow for TV Shows search
- * show trending TV Shows as well
- * show Other Users logs feed
- * allow for friends search
- * allow for friends follow
- * allow for friends unfollow
- * show friend feed
- * show actors/actresses the way Apple TV does in profile
- * show trailer for entities
- * */
-
 import { router } from "./router";
+import { initServiceWorker } from "./pwa/registerSW";
+import { PWAUpdateNotification } from "./components/pwa-update-notification";
 
 import "./index.css";
+
+initServiceWorker();
 
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
@@ -34,5 +23,6 @@ const root = document.getElementById("root");
 createRoot(root!).render(
   <ConvexProvider client={convex}>
     <RouterProvider router={router} />
+    <PWAUpdateNotification />
   </ConvexProvider>,
 );

@@ -5,10 +5,10 @@ import { cn } from "@/lib/utils";
 export function BottomNav() {
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-50 block border-t border-border/40 bg-background/80 pb-safe backdrop-blur-xl lg:hidden"
+      className="fixed bottom-0 left-0 right-0 z-50 block border-t border-border/40 bg-background/80 pb-[var(--safe-area-inset-bottom)] backdrop-blur-xl lg:hidden"
       style={{ viewTransitionName: "bottom-nav" }}
     >
-      <div className="flex h-16 items-center justify-around px-2">
+      <div className="flex h-16 items-center justify-around px-2 px-[max(0.5rem,var(--safe-area-inset-left))]">
         <NavLink
           to="/"
           className={({ isActive }) =>
