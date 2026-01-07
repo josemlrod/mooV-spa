@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useId } from "react";
 import { useUser } from "@clerk/clerk-react";
 import { useQuery, useMutation } from "convex/react";
+import { useParams, useNavigate } from "react-router";
 import heic2any from "heic2any";
 import {
   Film,
@@ -14,6 +15,8 @@ import {
   Calendar,
   Star,
   Loader2,
+  ArrowLeft,
+  User,
 } from "lucide-react";
 
 import { api } from "../../convex/_generated/api";
@@ -65,6 +68,8 @@ function formatDate(dateString: string): string {
 }
 
 export default function Profile() {
+  const { username: usernameParam } = useParams<{ username?: string }>();
+  const navigate = useNavigate();
   const { user } = useUser();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -73,20 +78,33 @@ export default function Profile() {
   const bioId = useId();
   const fileInputId = useId();
 
-  const convexUser = useQuery(
+  const isOwnProfile = !usernameParam;
+
+  const ownUser = useQuery(
     api.users.getUserByClerkId,
-    user?.id ? { clerkUserId: user.id } : "skip",
+    isOwnProfile && user?.id ? { clerkUserId: user.id } : "skip",
   );
+
+  const otherUser = useQuery(
+    api.users.getUserByUsername,
+    !isOwnProfile && usernameParam ? { username: usernameParam } : "skip",
+  );
+
+  const convexUser = isOwnProfile ? ownUser : otherUser;
 
   const stats = useQuery(
     api.watchLogs.getUserStats,
-    user?.id ? { clerkUserId: user.id } : "skip",
+    convexUser?.clerkUserId ? { clerkUserId: convexUser.clerkUserId } : "skip",
   );
 
   const logs = useQuery(
     api.watchLogs.getWatchLogsByUser,
-    user?.id ? { clerkUserId: user.id } : "skip",
+    convexUser?.clerkUserId ? { clerkUserId: convexUser.clerkUserId } : "skip",
   );
+
+  const filteredLogs = isOwnProfile
+    ? logs
+    : logs?.filter((log) => log.visibility === "public");
 
   const updateUser = useMutation(api.users.updateUser);
   const generateUploadUrl = useMutation(api.users.generateUploadUrl);
@@ -186,6 +204,26 @@ export default function Profile() {
   };
 
   if (!convexUser) {
+    if (usernameParam) {
+      return (
+        <div className="container mx-auto px-4 lg:px-8 py-8 animate-in fade-in duration-500">
+          <Card className="max-w-md mx-auto bg-muted/30 border-dashed">
+            <CardContent className="flex flex-col items-center justify-center py-16 text-center">
+              <User className="h-16 w-16 text-muted-foreground/50 mb-4" />
+              <h3 className="text-lg font-semibold mb-2">User not found</h3>
+              <p className="text-muted-foreground mb-4">
+                No user found with username @{usernameParam}
+              </p>
+              <Button variant="outline" onClick={() => navigate("/activity")} className="gap-2">
+                <ArrowLeft className="h-4 w-4" />
+                Back to Activity
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      );
+    }
+
     return (
       <div className="flex-1 flex items-center justify-center min-h-[50vh]">
         <div className="flex flex-col items-center gap-4 animate-pulse">
@@ -203,6 +241,18 @@ export default function Profile() {
 
   return (
     <div className="container mx-auto px-4 lg:px-8 py-8 animate-in fade-in duration-500">
+      {!isOwnProfile && (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate("/activity")}
+          className="mb-4 gap-2"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to Activity
+        </Button>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         <div className="lg:col-span-4 flex flex-col gap-6">
           <Card className="overflow-hidden border-border/50 bg-card/50 backdrop-blur-sm">
@@ -219,32 +269,36 @@ export default function Profile() {
                   </AvatarFallback>
                 </Avatar>
 
-                <Label
-                  htmlFor={fileInputId}
-                  className={cn(
-                    "absolute inset-0 flex items-center justify-center rounded-full",
-                    "bg-black/60 text-white opacity-0 group-hover:opacity-100 transition-all duration-300 cursor-pointer",
-                    isUploading && "opacity-100 cursor-wait",
-                  )}
-                >
-                  {isUploading ? (
-                    <Loader2 className="h-8 w-8 animate-spin" />
-                  ) : (
-                    <div className="flex flex-col items-center gap-1">
-                      <Camera className="h-6 w-6" />
-                      <span className="text-xs font-medium">Change</span>
-                    </div>
-                  )}
-                </Label>
-                <input
-                  id={fileInputId}
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handleFileSelect}
-                  disabled={isUploading}
-                  ref={fileInputRef}
-                />
+                {isOwnProfile && (
+                  <>
+                    <Label
+                      htmlFor={fileInputId}
+                      className={cn(
+                        "absolute inset-0 flex items-center justify-center rounded-full",
+                        "bg-black/60 text-white opacity-0 group-hover:opacity-100 transition-all duration-300 cursor-pointer",
+                        isUploading && "opacity-100 cursor-wait",
+                      )}
+                    >
+                      {isUploading ? (
+                        <Loader2 className="h-8 w-8 animate-spin" />
+                      ) : (
+                        <div className="flex flex-col items-center gap-1">
+                          <Camera className="h-6 w-6" />
+                          <span className="text-xs font-medium">Change</span>
+                        </div>
+                      )}
+                    </Label>
+                    <input
+                      id={fileInputId}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleFileSelect}
+                      disabled={isUploading}
+                      ref={fileInputRef}
+                    />
+                  </>
+                )}
               </div>
 
               <div className="w-full mt-6 space-y-4">
@@ -339,15 +393,17 @@ export default function Profile() {
                       </p>
                     )}
 
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="mt-6 w-full"
-                      onClick={() => setIsEditing(true)}
-                    >
-                      <Edit2 className="mr-2 h-3.5 w-3.5" />
-                      Edit Profile
-                    </Button>
+                    {isOwnProfile && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="mt-6 w-full"
+                        onClick={() => setIsEditing(true)}
+                      >
+                        <Edit2 className="mr-2 h-3.5 w-3.5" />
+                        Edit Profile
+                      </Button>
+                    )}
                   </div>
                 )}
               </div>
@@ -411,19 +467,21 @@ export default function Profile() {
               Recent History
             </h2>
 
-            {!logs || logs.length === 0 ? (
+            {!filteredLogs || filteredLogs.length === 0 ? (
               <Card className="bg-muted/30 border-dashed">
                 <CardContent className="flex flex-col items-center justify-center py-12 text-center text-muted-foreground">
                   <Film className="h-12 w-12 mb-4 opacity-20" />
                   <p>No movies logged yet.</p>
                   <p className="text-sm">
-                    Start watching and logging to fill your profile!
+                    {isOwnProfile
+                      ? "Start watching and logging to fill your profile!"
+                      : "This user hasn't shared any public logs yet."}
                   </p>
                 </CardContent>
               </Card>
             ) : (
               <div className="grid gap-3 max-h-[60vh] lg:max-h-[50vh] overflow-y-auto pr-2 -mr-2">
-                {logs.map((log, index) => (
+                {filteredLogs.map((log, index) => (
                   <Card
                     key={log._id}
                     className="overflow-hidden hover:bg-muted/20 transition-colors animate-in fade-in slide-in-from-bottom-2 duration-500 fill-mode-backwards cursor-pointer hover:shadow-md hover:border-primary/30"

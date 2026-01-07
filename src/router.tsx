@@ -5,6 +5,7 @@ import Auth from "@/routes/auth";
 import AppWithProviders from "@/routes/providers";
 import Home from "@/routes/home";
 import Profile from "@/routes/profile";
+import Activity from "@/routes/activity";
 import Layout from "@/routes/layout";
 import Entity from "@/routes/entity";
 import { loggingMiddleware, authMiddleware } from "@/lib/utils";
@@ -35,8 +36,12 @@ const routes = [
             loader: Home.loader,
           },
           {
-            path: "/profile",
+            path: "/profile/:username?",
             element: <Profile />,
+          },
+          {
+            path: "/activity",
+            element: <Activity />,
           },
           {
             path: "/search",

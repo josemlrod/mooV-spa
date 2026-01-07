@@ -1,6 +1,6 @@
 import { NavLink } from "react-router";
 import { useAuth } from "@clerk/clerk-react";
-import { House, User, Film, LogOut, SearchIcon } from "lucide-react";
+import { House, User, Film, LogOut, SearchIcon, Activity } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
@@ -48,6 +48,21 @@ export function SideNav() {
           >
             <House className="h-5 w-5" />
             <span>Home</span>
+          </NavLink>
+
+          <NavLink
+            to="/activity"
+            className={({ isActive }) =>
+              cn(
+                "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all hover:bg-muted/50",
+                isActive
+                  ? "bg-primary/10 text-primary hover:bg-primary/15"
+                  : "text-muted-foreground hover:text-foreground",
+              )
+            }
+          >
+            <Activity className="h-5 w-5" />
+            <span>Activity</span>
           </NavLink>
 
           <NavLink

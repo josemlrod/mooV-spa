@@ -90,7 +90,7 @@ export const getWatchLogsByUserAndMovie = query({
       )
       .collect();
 
-    return logs.sort((a, b) => 
+    return logs.sort((a, b) =>
       new Date(b.watchedAt).getTime() - new Date(a.watchedAt).getTime()
     );
   },
@@ -162,5 +162,74 @@ export const getUserStats = query({
       rewatches,
       theaterVisits,
     };
+  },
+});
+
+export const getPublicActivityFeed = query({
+  args: {
+    limit: v.number(),
+    offset: v.number(),
+  },
+  handler: async (ctx, args) => {
+    const logs = await ctx.db
+      .query("watchLogs")
+      .withIndex("by_visibility", (q) => q.eq("visibility", "public"))
+      .order("desc")
+      .collect();
+
+    const paginatedLogs = logs.slice(args.offset, args.offset + args.limit + 1);
+    const hasMore = paginatedLogs.length > args.limit;
+    const itemsToReturn = hasMore ? paginatedLogs.slice(0, -1) : paginatedLogs;
+
+    const enrichedLogs = await Promise.all(
+      itemsToReturn.map(async (log) => {
+        const user = await ctx.db.get(log.userId);
+        const movie = await ctx.db.get(log.movieId);
+
+        let resolvedProfileImageUrl = user?.profileImageUrl || null;
+        if (user?.profileImageStorageId) {
+          resolvedProfileImageUrl = await ctx.storage.getUrl(user.profileImageStorageId);
+        }
+
+        return {
+          log,
+          user: user
+            ? {
+              displayName: user.displayName,
+              username: user.username,
+              profileImageUrl: resolvedProfileImageUrl,
+            }
+            : null,
+          movie: movie
+            ? {
+              title: movie.title,
+              posterPath: movie.posterPath,
+              releaseDate: movie.releaseDate,
+            }
+            : null,
+        };
+      })
+    );
+
+    const validLogs = enrichedLogs.filter(
+      (item) => item.user !== null && item.user.username !== null && item.movie !== null
+    );
+
+    return {
+      activities: validLogs,
+      hasMore,
+    };
+  },
+});
+
+export const getPublicActivityCount = query({
+  args: {},
+  handler: async (ctx) => {
+    const logs = await ctx.db
+      .query("watchLogs")
+      .withIndex("by_visibility", (q) => q.eq("visibility", "public"))
+      .collect();
+
+    return logs.length;
   },
 });

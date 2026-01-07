@@ -21,20 +21,45 @@ Complete database schema documentation for MooV's Convex backend.
 - Rewatch support
 - Extensible for social features
 
+### Phase 2 - Activity Feed (Completed)
+Minimal social interaction feature for viewing public activity across all users.
+
+**Includes:**
+- Public activity feed route (`/activity`)
+- View other users' profiles (`/profile/:username`)
+- Activity navigation in mobile and desktop navs
+- Privacy-aware filtering (public logs only)
+- Pagination with "Load More" functionality
+- Relative time display for recent activity
+
+**Quick Reference:**
+- No likes, comments, or follows (minimal social)
+- Encourages public sharing of movie logs
+- Username-based profile URLs
+- Reuses existing WatchLog components
+
 ---
 
 ## Implementation Checklist
 
-When implementing the Convex backend:
+### MVP - Convex Backend (Completed)
+- [x] Install Convex dependencies
+- [x] Set up Convex project
+- [x] Copy schema from `database-schema.md` to `convex/schema.ts`
+- [x] Create mutations for CRUD operations
+- [x] Create queries for data retrieval
+- [x] Hook up `NewReview` component to create watch logs
+- [x] Update `profile.tsx` to display user's watch logs
+- [x] Add "watched" indicator on movie cards
 
-- [ ] Install Convex dependencies
-- [ ] Set up Convex project
-- [ ] Copy schema from `database-schema.md` to `convex/schema.ts`
-- [ ] Create mutations for CRUD operations
-- [ ] Create queries for data retrieval
-- [ ] Hook up `NewReview` component to create watch logs
-- [ ] Update `profile.tsx` to display user's watch logs
-- [ ] Add "watched" indicator on movie cards
+### Phase 2 - Activity Feed (Completed)
+- [x] Add `by_visibility_and_created` index to watchLogs
+- [x] Create public activity feed queries
+- [x] Build `/activity` route UI
+- [x] Update profile to support viewing other users
+- [x] Add Activity to navigation components
+- [x] Update router configuration
+- [x] Update documentation
 
 ---
 

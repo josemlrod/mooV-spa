@@ -1,5 +1,5 @@
 import { NavLink } from "react-router";
-import { House, SearchIcon, User } from "lucide-react";
+import { House, SearchIcon, User, Activity } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function BottomNav() {
@@ -20,6 +20,19 @@ export function BottomNav() {
         >
           <House className="h-6 w-6" />
           <span>Home</span>
+        </NavLink>
+
+        <NavLink
+          to="/activity"
+          className={({ isActive }) =>
+            cn(
+              "flex flex-1 flex-col items-center justify-center gap-1 rounded-lg py-2 text-[10px] font-medium transition-colors hover:bg-muted/50",
+              isActive ? "text-primary" : "text-muted-foreground",
+            )
+          }
+        >
+          <Activity className="h-6 w-6" />
+          <span>Activity</span>
         </NavLink>
 
         <NavLink

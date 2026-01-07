@@ -121,3 +121,32 @@ export const generateUploadUrl = mutation({
     return await ctx.storage.generateUploadUrl();
   },
 });
+
+export const getUserByUsername = query({
+  args: {
+    username: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_username", (q) => q.eq("username", args.username))
+      .first();
+
+    if (!user) {
+      return null;
+    }
+
+    let resolvedProfileImageUrl = user.profileImageUrl;
+    if (user.profileImageStorageId) {
+      const storageUrl = await ctx.storage.getUrl(user.profileImageStorageId);
+      if (storageUrl) {
+        resolvedProfileImageUrl = storageUrl;
+      }
+    }
+
+    return {
+      ...user,
+      resolvedProfileImageUrl,
+    };
+  },
+});

@@ -89,4 +89,5 @@ export default defineSchema({
     .index("by_user_and_movie", ["userId", "movieId"])
     .index("by_watched_at", ["watchedAt"])
     .index("by_user_and_watched_at", ["userId", "watchedAt"])
+    .index("by_visibility", ["visibility"]),
 });

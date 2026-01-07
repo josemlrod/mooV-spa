@@ -136,6 +136,7 @@ The core action - logging a movie watch
 - `by_user_and_movie` on `userId, movieId` (for checking if user watched movie)
 - `by_watched_at` on `watchedAt` (for chronological feeds)
 - `by_user_and_watched_at` on `userId, watchedAt` (for user's timeline)
+- `by_visibility` on `visibility` (for public activity feed - `_creationTime` is auto-appended)
 - `by_visibility_and_created` on `visibility, _creationTime` (for public feed)
 
 **Notes:**
@@ -272,7 +273,7 @@ export default defineSchema({
     .index("by_user_and_movie", ["userId", "movieId"])
     .index("by_watched_at", ["watchedAt"])
     .index("by_user_and_watched_at", ["userId", "watchedAt"])
-    .index("by_visibility_and_created", ["visibility", "_creationTime"]),
+    .index("by_visibility", ["visibility"]),
 });
 ```
 
@@ -354,16 +355,32 @@ const hasWatched = await ctx.db
 ```typescript
 const publicFeed = await ctx.db
   .query("watchLogs")
-  .withIndex("by_visibility_and_created", (q) => q.eq("visibility", "public"))
+  .withIndex("by_visibility", (q) => q.eq("visibility", "public"))
   .order("desc")
   .take(50);
 ```
 
 ---
 
+## Phase 2 - Minimal Social (Completed)
+
+### Implemented Features:
+- **Public Activity Feed** - View all users' public watch logs at `/activity` route
+- **User Profile Viewing** - View other users' public profiles via `/profile/:username`
+- **Activity Navigation** - Added Activity link to bottom nav (mobile) and side nav (desktop)
+- **Privacy Filtering** - Only public logs appear in activity feed and on other users' profiles
+
+### Database Changes:
+- Added `by_visibility` index to `watchLogs` for efficient public feed queries
+- Added `getUserByUsername` query to look up users by username
+- Added `getPublicActivityFeed` query with pagination support
+- Added `getPublicActivityCount` query for metrics
+
+---
+
 ## Future Expansion (Post-MVP)
 
-### Phase 2 Tables:
+### Phase 2b - Enhanced Social Tables:
 - **`lists`** - User watchlists, custom lists, favorites
 - **`listItems`** - Movies in lists (many-to-many)
 - **`follows`** - User follow/friend relationships
@@ -543,26 +560,38 @@ Relationships:
 
 ## Implementation Priority
 
-### Phase 1 (This PR):
+### Phase 1 - Schema & Documentation (Completed):
 1. ✅ Define schema in documentation
 2. ✅ Create `/docs` directory structure
 3. ✅ Commit schema files to git
 
-### Phase 2 (Next steps):
-1. Install Convex dependencies
-2. Initialize Convex project
-3. Implement schema in `convex/schema.ts`
-4. Create mutations (createUser, createMovie, createWatchLog)
-5. Create queries (getUser, getMovie, getUserWatchLogs)
-6. Add error handling and validation
+### Phase 1b - Convex Backend (Completed):
+1. ✅ Install Convex dependencies
+2. ✅ Initialize Convex project
+3. ✅ Implement schema in `convex/schema.ts`
+4. ✅ Create mutations (createUser, createMovie, createWatchLog)
+5. ✅ Create queries (getUser, getMovie, getUserWatchLogs)
+6. ✅ Add error handling and validation
 
-### Phase 3 (UI Integration):
-1. Hook up NewReview component to createWatchLog mutation
-2. Update profile page to display watch logs
-3. Add "watched" badges to movie cards
-4. Implement privacy controls
+### Phase 1c - UI Integration (Completed):
+1. ✅ Hook up NewReview component to createWatchLog mutation
+2. ✅ Update profile page to display watch logs
+3. ✅ Add "watched" badges to movie cards
+4. ✅ Implement privacy controls
 
-### Phase 4 (Polish):
+### Phase 2 - Activity Feed (Completed):
+1. ✅ Added `by_visibility` index to watchLogs schema
+2. ✅ Created `getPublicActivityFeed` query with pagination
+3. ✅ Created `getPublicActivityCount` query
+4. ✅ Created `getUserByUsername` query
+5. ✅ Built `/activity` route with public feed UI
+6. ✅ Updated `/profile` to `/profile/:username?` for viewing other users
+7. ✅ Added Activity to bottom navigation (mobile)
+8. ✅ Added Activity to side navigation (desktop)
+9. ✅ Created `ActivityCard` component
+10. ✅ Implemented privacy filtering (public logs only)
+
+### Phase 3 (Next - Polish):
 1. Add loading states
 2. Add error messages
 3. Add success toasts
