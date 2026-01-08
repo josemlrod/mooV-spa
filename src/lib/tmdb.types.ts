@@ -65,4 +65,5 @@ export interface CastMember {
 export interface MovieCredits {
   id: number;
   cast: CastMember[];
+  crew: CastMember[];
 };

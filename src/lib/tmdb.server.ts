@@ -1,5 +1,9 @@
 import { tryCatch } from "./utils";
-import type { TrendingResponse, PosterSize, BackdropSize, MovieDetail, MovieCredits } from "./tmdb.types";
+import type { TrendingResponse, PosterSize, BackdropSize, MovieDetail, MovieCredits, CastMember } from "./tmdb.types";
+
+export type CastMemberWithPosterUrl = CastMember & {
+  posterUrl: string | null;
+};
 
 const TMDB_BASE_URL = "https://api.themoviedb.org/3";
 const TMDB_IMAGE_BASE_URL = "https://image.tmdb.org/t/p";
@@ -58,13 +62,24 @@ export async function getTrendingMovies(
 
 export async function getEntity(
   id: string
-): Promise<MovieDetail & { cast: MovieCredits['cast'] | null } | null> {
+): Promise<MovieDetail & {
+  cast: CastMemberWithPosterUrl[] | null;
+  director: string | null;
+} | null> {
   const [entity, error] = await tryCatch(
     tmdbFetch<MovieDetail>(`/movie/${id}?language=en-US`),
   );
   const [credits, _] = await tryCatch(
     tmdbFetch<MovieCredits>(`/movie/${id}/credits?language=en-US`),
   );
+
+  const cast = credits ? credits.cast.map((c: CastMember) => {
+    return {
+      ...c,
+      posterUrl: getPosterUrl(c.profile_path, "w500")
+    }
+  }) : null;
+  const director = credits ? credits.crew.find((c: CastMember) => c.known_for_department === "Directing") : null;
 
   if (error) {
     console.error("Failed to fetch movie:", error);
@@ -73,7 +88,8 @@ export async function getEntity(
 
   return {
     ...entity,
-    cast: credits ? credits.cast : null,
+    cast,
+    director: director?.original_name ?? null,
   };
 }
 

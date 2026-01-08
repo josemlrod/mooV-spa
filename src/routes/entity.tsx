@@ -1,21 +1,27 @@
 import { useState } from "react";
 import { useLoaderData, useNavigate } from "react-router";
 import type { LoaderFunctionArgs, ActionFunctionArgs } from "react-router";
-import { ArrowLeft, Calendar, Clock, History, MessageCircle, Star } from "lucide-react";
+import {
+  ArrowLeft,
+  Calendar,
+  Clock,
+  FilmIcon,
+  History,
+  MessageCircle,
+  Star,
+} from "lucide-react";
 
-import { getEntity, getPosterUrl } from "@/lib/tmdb.server";
-import type { CastMember } from "@/lib/tmdb.types";
+import {
+  getEntity,
+  getPosterUrl,
+  type CastMemberWithPosterUrl,
+} from "@/lib/tmdb.server";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardTitle,
-  CardDescription,
-  CardHeader,
-} from "@/components/ui/card";
 import { NewReview } from "@/components/new-review";
 import { WatchLogsSheet } from "@/components/watch-logs-sheet";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface EntityData {
   id: number;
@@ -29,7 +35,8 @@ interface EntityData {
   backdrop_path: string | null;
   vote_average: number;
   genres: { id: number; name: string }[];
-  cast?: CastMember[];
+  cast?: CastMemberWithPosterUrl[];
+  director: string | null;
 }
 
 export default function Entity() {
@@ -93,6 +100,11 @@ export default function Entity() {
                 <div className="flex gap-1 items-center text-muted-foreground text-base">
                   <Clock className="w-4 h-4" /> {entity.runtime} min
                 </div>
+                {entity.director ? (
+                  <div className="flex gap-1 items-center text-muted-foreground text-base">
+                    <FilmIcon className="w-4 h-4" /> {entity.director}
+                  </div>
+                ) : null}
               </div>
 
               <div className="flex w-full gap-2">
@@ -156,14 +168,24 @@ export default function Entity() {
               <div className="flex gap-2 flex-col">
                 <h3 className="text-xl font-semibold">Cast</h3>
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
-                  {entity.cast.slice(0, 6).map((c: CastMember) => {
+                  {entity.cast.slice(0, 6).map((c: CastMemberWithPosterUrl) => {
                     return (
-                      <Card key={c.id}>
-                        <CardHeader>
-                          <CardTitle>{c.character}</CardTitle>
-                          <CardDescription>{c.name}</CardDescription>
-                        </CardHeader>
-                      </Card>
+                      <div className="flex gap-2">
+                        <Avatar className="h-32 w-32 border-4 border-background shadow-xl">
+                          <AvatarImage
+                            src={c.posterUrl ?? undefined}
+                            alt={c.original_name}
+                            className="object-cover"
+                          />
+                          <AvatarFallback className="text-4xl bg-muted">
+                            {c.original_name[0]}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex justify-center flex-col">
+                          <p className="text-muted-foreground">{c.character}</p>
+                          <p>{c.original_name}</p>
+                        </div>
+                      </div>
                     );
                   })}
                 </div>
