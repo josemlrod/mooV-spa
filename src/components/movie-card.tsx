@@ -3,6 +3,7 @@ import { Star } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { SearchType } from "@/routes/search";
 
 interface MovieCardProps {
   id: number;
@@ -21,7 +22,7 @@ export function MovieCard({
   releaseDate,
   className,
 }: MovieCardProps) {
-  const href = `/entity/${id}`;
+  const href = `/entity/${id}/${SearchType.MOVIE}`;
   const isTransitioning = useViewTransitionState(href);
 
   const year = releaseDate ? new Date(releaseDate).getFullYear() : null;
