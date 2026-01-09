@@ -1,5 +1,13 @@
 import { tryCatch } from "./utils";
-import type { TrendingResponse, PosterSize, BackdropSize, MovieDetail, MovieCredits, CastMember } from "./tmdb.types";
+import type {
+  TrendingResponse,
+  PosterSize,
+  BackdropSize,
+  MovieDetail,
+  MovieCredits,
+  CastMember,
+} from "./tmdb.types";
+import { SearchType, type SearchTypeValues } from "@/routes/search";
 
 export type CastMemberWithPosterUrl = CastMember & {
   posterUrl: string | null;
@@ -8,12 +16,40 @@ export type CastMemberWithPosterUrl = CastMember & {
 const TMDB_BASE_URL = "https://api.themoviedb.org/3";
 const TMDB_IMAGE_BASE_URL = "https://image.tmdb.org/t/p";
 
-export function getPosterUrl(path: string | null, size: PosterSize = "w342"): string | null {
+function getEntityPaths({
+  type,
+  entityId,
+}: {
+  type: SearchTypeValues;
+  entityId: string;
+}) {
+  switch (type) {
+    case SearchType.TV_SHOW:
+      return {
+        entity: `/tv/${entityId}?language=en-US`,
+        credits: `/tv/${entityId}/season/1/credits?language=en-US`,
+      };
+
+    default:
+      return {
+        entity: `/movie/${entityId}?language=en-US`,
+        credits: `/movie/${entityId}/credits?language=en-US`,
+      };
+  }
+}
+
+export function getPosterUrl(
+  path: string | null,
+  size: PosterSize = "w342",
+): string | null {
   if (!path) return null;
   return `${TMDB_IMAGE_BASE_URL}/${size}${path}`;
 }
 
-export function getBackdropUrl(path: string | null, size: BackdropSize = "w1280"): string | null {
+export function getBackdropUrl(
+  path: string | null,
+  size: BackdropSize = "w1280",
+): string | null {
   if (!path) return null;
   return `${TMDB_IMAGE_BASE_URL}/${size}${path}`;
 }
@@ -33,7 +69,9 @@ async function tmdbFetch<T>(endpoint: string): Promise<T> {
   });
 
   if (!response.ok) {
-    throw new Error(`TMDB API error: ${response.status} ${response.statusText}`);
+    throw new Error(
+      `TMDB API error: ${response.status} ${response.statusText}`,
+    );
   }
 
   return response.json();
@@ -41,10 +79,12 @@ async function tmdbFetch<T>(endpoint: string): Promise<T> {
 
 export async function getTrendingMovies(
   timeWindow: "day" | "week" = "week",
-  page: number = 1
+  page: number = 1,
 ) {
   const [data, error] = await tryCatch(
-    tmdbFetch<TrendingResponse>(`/trending/movie/${timeWindow}?language=en-US&page=${page}`)
+    tmdbFetch<TrendingResponse>(
+      `/trending/movie/${timeWindow}?language=en-US&page=${page}`,
+    ),
   );
 
   if (error) {
@@ -60,26 +100,40 @@ export async function getTrendingMovies(
   };
 }
 
-export async function getEntity(
-  id: string
-): Promise<MovieDetail & {
-  cast: CastMemberWithPosterUrl[] | null;
-  director: string | null;
-} | null> {
-  const [entity, error] = await tryCatch(
-    tmdbFetch<MovieDetail>(`/movie/${id}?language=en-US`),
-  );
-  const [credits, _] = await tryCatch(
-    tmdbFetch<MovieCredits>(`/movie/${id}/credits?language=en-US`),
-  );
+export async function getEntity({
+  id,
+  type,
+}: {
+  id: string;
+  type: SearchTypeValues;
+}): Promise<
+  | (MovieDetail & {
+      cast: CastMemberWithPosterUrl[] | null;
+      director: string | null;
+    })
+  | null
+> {
+  const { entity: entityPath, credits: creditsPath } = getEntityPaths({
+    entityId: id,
+    type,
+  });
 
-  const cast = credits ? credits.cast.map((c: CastMember) => {
-    return {
-      ...c,
-      posterUrl: getPosterUrl(c.profile_path, "w500")
-    }
-  }) : null;
-  const director = credits ? credits.crew.find((c: CastMember) => c.known_for_department === "Directing") : null;
+  const [entity, error] = await tryCatch(tmdbFetch<MovieDetail>(entityPath));
+  const [credits, _] = await tryCatch(tmdbFetch<MovieCredits>(creditsPath));
+
+  const cast = credits
+    ? credits.cast.map((c: CastMember) => {
+        return {
+          ...c,
+          posterUrl: getPosterUrl(c.profile_path, "w500"),
+        };
+      })
+    : null;
+  const director = credits
+    ? credits.crew.find(
+        (c: CastMember) => c.known_for_department === "Directing",
+      )
+    : null;
 
   if (error) {
     console.error("Failed to fetch movie:", error);
@@ -93,11 +147,22 @@ export async function getEntity(
   };
 }
 
-export async function searchMovie(
-  query: string
-) {
+export async function searchMovie(query: string) {
   const [results, error] = await tryCatch(
     tmdbFetch<MovieDetail>(`/search/movie?query=${query}&language=en-US`),
+  );
+
+  if (error) {
+    console.error("Failed to search:", error);
+    return null;
+  }
+
+  return results;
+}
+
+export async function searchTvShow(query: string) {
+  const [results, error] = await tryCatch(
+    tmdbFetch<MovieDetail>(`/search/tv?query=${query}&language=en-US`),
   );
 
   if (error) {
