@@ -53,7 +53,7 @@ const routes = [
       },
 
       {
-        path: "/entity/:id",
+        path: "/entity/:id/:type",
         element: <Entity />,
         loader: Entity.loader,
         action: Entity.action,

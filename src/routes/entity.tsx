@@ -22,10 +22,12 @@ import { Badge } from "@/components/ui/badge";
 import { NewReview } from "@/components/new-review";
 import { WatchLogsSheet } from "@/components/watch-logs-sheet";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import type { SearchTypeValues } from "./search";
 
 interface EntityData {
   id: number;
   title: string;
+  name?: string;
   tagline?: string;
   release_date: string;
   runtime: number;
@@ -83,7 +85,7 @@ export default function Entity() {
           <div className="space-y-5">
             <div className="flex flex-col gap-2">
               <h1 className="text-3xl lg:text-4xl font-bold tracking-tight text-foreground">
-                {entity.title}
+                {entity.title || entity.name}
               </h1>
               {entity.tagline && (
                 <p className="text-lg text-muted-foreground italic">
@@ -212,14 +214,17 @@ export default function Entity() {
 
 Entity.loader = async function (args: LoaderFunctionArgs) {
   const {
-    params: { id },
+    params: { id, type },
   } = args;
 
   if (!id) {
     throw new Response("Movie ID is required", { status: 400 });
   }
 
-  const entity = await getEntity(id);
+  const entity = await getEntity({
+    id,
+    type: type as SearchTypeValues,
+  });
 
   if (!entity) {
     throw new Response("Movie not found", { status: 404 });

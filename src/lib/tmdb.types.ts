@@ -1,6 +1,7 @@
 export interface Movie {
   id: number;
   title: string;
+  name?: string;
   original_title: string;
   overview: string;
   poster_path: string | null;
@@ -23,7 +24,14 @@ export interface TrendingResponse {
   total_results: number;
 }
 
-export type PosterSize = "w92" | "w154" | "w185" | "w342" | "w500" | "w780" | "original";
+export type PosterSize =
+  | "w92"
+  | "w154"
+  | "w185"
+  | "w342"
+  | "w500"
+  | "w780"
+  | "original";
 export type BackdropSize = "w300" | "w780" | "w1280" | "original";
 
 export interface MovieDetail {
@@ -60,10 +68,10 @@ export interface CastMember {
   character: string;
   credit_id: string;
   order: number;
-};
+}
 
 export interface MovieCredits {
   id: number;
   cast: CastMember[];
   crew: CastMember[];
-};
+}
