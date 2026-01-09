@@ -13,9 +13,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: superfly/flyctl-actions/setup-flyctl@master
-      - run: flyctl deploy --remote-only
+      - run: flyctl deploy --remote-only --build-arg VITE_CLERK_PUBLISHABLE_KEY="${{ vars.VITE_CLERK_PUBLISHABLE_KEY }}" --build-arg VITE_CONVEX_URL="${{ vars.VITE_CONVEX_URL }}" --build-arg VITE_TMDB_READ_ACCESS_TOKEN="${{ vars.VITE_TMDB_READ_ACCESS_TOKEN }}"
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
-          VITE_CLERK_PUBLISHABLE_KEY: ${{ vars.VITE_CLERK_PUBLISHABLE_KEY }}
-          VITE_CONVEX_URL: ${{ vars.VITE_CONVEX_URL }}
-          VITE_TMDB_READ_ACCESS_TOKEN: ${{ vars.VITE_TMDB_READ_ACCESS_TOKEN }}
