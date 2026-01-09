@@ -228,7 +228,7 @@ export default function Search() {
                 <SearchResultItem
                   key={entity.id}
                   entity={entity}
-                  type={searchType}
+                  type={searchType as SearchTypeValues}
                 />
               ))}
             </div>
